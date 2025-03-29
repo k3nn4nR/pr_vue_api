@@ -13,9 +13,14 @@ const form = ref({
 const user = ref();
 
 async function onLogin(){
-  await axios.get("http://localhost:8000/sanctum/csrf-cookie");
-  await axios.post("http://localhost:8000/login ",{email:form.value.email,password:form.value.password});
-  let { data } = await axios.get("http://localhost:8000/api/user");
+  await axios.post("http://localhost:8000/api/login",{email:form.value.email,password:form.value.password}).then(response => {
+      localStorage.setItem('token', response.data.token);
+    });
+  let { data } = await axios.get("http://localhost:8000/api/user",{
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`
+    }
+  });
   user.value = data;
 }
 </script>
