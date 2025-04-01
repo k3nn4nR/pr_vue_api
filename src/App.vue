@@ -13,10 +13,10 @@ const form = ref({
 const user = ref();
 
 async function onLogin(){
-  await axios.post("http://localhost:8000/api/login",{email:form.value.email,password:form.value.password}).then(response => {
+  await axios.post(`${import.meta.env.VITE_API_URL}/api/login`,{email:form.value.email,password:form.value.password}).then(response => {
       localStorage.setItem('token', response.data.token);
     });
-  let { data } = await axios.get("http://localhost:8000/api/user",{
+  let { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/user`,{
     headers: {
       Authorization: `Bearer ${localStorage.getItem('token')}`
     }
