@@ -1,21 +1,46 @@
 <script setup>
 import HelloWorld from './components/HelloWorld.vue'
 import TheWelcome from './components/TheWelcome.vue'
-import { ref } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import axios from "axios";
 
-axios.defaults.withCredentials = true;
+/**
+ * In addition, you should enable the withCredentials and withXSRFToken options on your application's 
+ * global axios instance. Typically, this should be performed in your resources/js/bootstrap.js file. 
+ * If you are not using Axios to make HTTP requests from your frontend, you should perform the equivalent 
+ * configuration on your own HTTP client:
+ * axios.defaults.withCredentials = true;
+ * axios.defaults.withXSRFToken = true;
+ */
+
+ axios.defaults.withCredentials = true;
+ axios.defaults.withXSRFToken = true;
 
 const form = ref({
   email:null,
   password:null
 });
+
+
+const brand = ref({
+  brand:null,
+});
 const user = ref();
 
 async function onLogin(){
+  //
+  /**
+   * To authenticate your SPA, your SPA's "login" page should first make a request to the /sanctum/csrf-cookie endpoint 
+   * to initialize CSRF protection for the application:
+   * axios.get('/sanctum/csrf-cookie').then(response => {
+   *     // Login...
+   * });
+   */
+
+  await axios.get('/sanctum/csrf-cookie').then(response => {});
   await axios.post(`${import.meta.env.VITE_API_URL}/api/login`,{email:form.value.email,password:form.value.password}).then(response => {
-      localStorage.setItem('token', response.data.token);
-    });
+    localStorage.setItem('token', response.data.split('|')[1]);
+  });
   let { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/user`,{
     headers: {
       Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -23,6 +48,24 @@ async function onLogin(){
   });
   user.value = data;
 }
+
+async function onRegister(){
+  await axios.post(`${import.meta.env.VITE_API_URL}/api/brand`,{
+    brand:brand.value.brand},{
+    headers: {
+        'Content-type':'application/json',
+        'Authorization':'Bearer '+localStorage.getItem('token')
+    }}).then(response => {
+    console.log(response.data)
+  });
+}
+
+onMounted(() => {
+  Echo.channel('item-registered')
+  .listen('StoreEvent', (e)=>{
+      console.log(e);
+  });
+});
 </script>
 
 <template>
@@ -45,6 +88,18 @@ async function onLogin(){
         </div>
       </form>
       {{ user }}
+
+      <form v-if=user  @submit.prevent="onRegister">
+        <div>
+          <label for="email">Brand:</label>
+          <input type="text" v-model="brand.brand">
+        </div>
+        <div>
+          <button>Register</button>
+        </div>
+      </form>
+
+
     </div>
   </header>
 
