@@ -3,6 +3,7 @@ import HelloWorld from './components/HelloWorld.vue'
 import TheWelcome from './components/TheWelcome.vue'
 import { ref, onMounted, onUnmounted } from "vue";
 import axios from "axios";
+import Swal from 'sweetalert2'
 
 /**
  * In addition, you should enable the withCredentials and withXSRFToken options on your application's 
@@ -25,6 +26,7 @@ const form = ref({
 const brand = ref({
   brand:null,
 });
+
 const user = ref();
 
 async function onLogin(){
@@ -37,16 +39,17 @@ async function onLogin(){
    * });
    */
 
-  await axios.get('/sanctum/csrf-cookie').then(response => {});
-  await axios.post(`${import.meta.env.VITE_API_URL}/api/login`,{email:form.value.email,password:form.value.password}).then(response => {
-    localStorage.setItem('token', response.data.split('|')[1]);
-  });
-  let { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/user`,{
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem('token')}`
-    }
-  });
-  user.value = data;
+  await axios.get(`${import.meta.env.VITE_API_URL}/sanctum/csrf-cookie`);
+  
+  await axios.post(`${import.meta.env.VITE_API_URL}/api/login`,{email:form.value.email,password:form.value.password})
+        .then(response => {
+          localStorage.setItem('token', response.data.split('|')[1]);
+        });
+  await axios.get(`${import.meta.env.VITE_API_URL}/api/user`,{
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+    }).then(response=>{user.value = response.data;});
 }
 
 async function onRegister(){
@@ -60,10 +63,29 @@ async function onRegister(){
   });
 }
 
+async function onLogout(){
+  await axios.post(`${import.meta.env.VITE_API_URL}/api/logout`,{},{ withCredentials: true });
+}
+
+const Toast = Swal.mixin({
+  toast: true,
+  position: "top-end",
+  showConfirmButton: false,
+  timer: 3000,
+  timerProgressBar: true,
+  didOpen: (toast) => {
+    toast.onmouseenter = Swal.stopTimer;
+    toast.onmouseleave = Swal.resumeTimer;
+  }
+});
+
 onMounted(() => {
   Echo.channel('item-registered')
   .listen('StoreEvent', (e)=>{
-      console.log(e);
+      Toast.fire({
+          icon: 'success',
+          title: e.message
+      })
   });
 });
 </script>
@@ -99,6 +121,12 @@ onMounted(() => {
         </div>
       </form>
 
+      <div></div>
+      <form v-if=user @submit.prevent="onLogout">
+        <div>
+          <button>Logout</button>
+        </div>
+      </form>
 
     </div>
   </header>
