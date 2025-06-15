@@ -9,11 +9,22 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.7.2",
+    "@fortawesome/free-solid-svg-icons": "^6.7.2",
+    "@fortawesome/vue-fontawesome": "^3.0.8",
     "axios": "^1.8.4",
+    "bootstrap": "^5.3.6",
+    "datatables.net-bs5": "^2.3.2",
+    "datatables.net-dt": "^2.3.2",
+    "datatables.net-responsive-dt": "^3.0.4",
+    "datatables.net-select-dt": "^3.0.1",
+    "datatables.net-vue3": "^3.0.4",
     "laravel-echo": "^2.0.2",
     "pusher-js": "^8.4.0",
     "sweetalert2": "^11.18.0",
-    "vue": "^3.5.13"
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.1",
+    "vuew": "^1.0.0-security"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.1",
